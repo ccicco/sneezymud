@@ -64,8 +64,21 @@ bool TAccount::write(const sstring& aname) {
     if (account_id == 0) {
       db.query("select account_id from account where name=lower('%s')",
         aname.c_str());
-      assert(db.fetchRow());
-      account_id = convertTo<int>(db["account_id"]);
+      bool got = db.fetchRow();
+      if (!got) {
+        vlogf(LOG_BUG,
+          format("TAccount::write: id fetch by name failed for '%s', "
+                 "falling back to last_insert_id") %
+            aname);
+        db.query("select last_insert_id() as account_id");
+        got = db.fetchRow();
+      }
+      if (got)
+        account_id = convertTo<int>(db["account_id"]);
+      else
+        vlogf(LOG_BUG,
+          format("TAccount::write: could not determine account_id for '%s'") %
+            aname);
     }
 
   } else {

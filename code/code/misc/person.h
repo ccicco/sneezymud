@@ -156,6 +156,7 @@ class TPerson : public TBeing {
     virtual TThing& operator+=(TThing& t);
     virtual void doPowers(const sstring&) const;
     void startLevels();
+    void crownFirstImmortal();
     void advanceLevel(classIndT);
     void doHPGainForLev(classIndT);
     virtual void doBestow(const sstring&);

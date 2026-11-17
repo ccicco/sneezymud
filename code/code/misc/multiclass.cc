@@ -254,6 +254,38 @@ void TPerson::startLevels() {
   }
 }
 
+// Crown the first character of a fresh instance.  Runs post-load because
+// the creation flow can reach first login with level already set, which
+// skips doStart()'s crown in connect.cc.  Self-disarming: keyed on the
+// wizpower table being empty, so once any immortal exists it never fires.
+void TPerson::crownFirstImmortal() {
+  TDatabase db(DB_SNEEZY);
+
+  // make sure our player id is set so wizpower rows land correctly
+  if (!getPlayerID()) {
+    db.query("select id from player where name='%s'", getName().c_str());
+    if (db.fetchRow())
+      player.player_id = convertTo<int>(db["id"]);
+  }
+
+  db.query("select count(1) as num from wizpower");
+  if (!db.fetchRow() || db["num"] != "0")
+    return;
+  if (GetMaxLevel() >= MAX_IMMORT)
+    return;
+
+  vlogf(LOG_MISC, format("%s is the first character, crowning level %d.") %
+                    getName() % MAX_IMMORT);
+  setLevel(MAGE_LEVEL_IND, MAX_IMMORT);
+  setLevel(CLERIC_LEVEL_IND, MAX_IMMORT);
+  setLevel(THIEF_LEVEL_IND, MAX_IMMORT);
+  setLevel(WARRIOR_LEVEL_IND, MAX_IMMORT);
+  setExp(2000000000);
+  setWizPowers(this, this, "allpowers");
+  remWizPower(POWER_IDLED);
+  calcMaxLevel();
+}
+
 classIndT TBeing::bestClass() const {
   int iMax = 0;
   classIndT Class = MIN_CLASS_IND, i;

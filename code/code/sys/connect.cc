@@ -1315,6 +1315,7 @@ int TPerson::genericLoadPC() {
   }
   resetChar();
   loadRent();
+  crownFirstImmortal();
   if (player.time->last_logon && (player.time->last_logon < Uptime)) {
     if ((time(0) - player.time->last_logon) > 36 * SECS_PER_REAL_HOUR)
       wipeCorpseFile(sstring(name).lower().c_str());
