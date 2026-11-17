@@ -1086,8 +1086,31 @@ void TBeing::saveChar(int load_room) {
   if (unlink(playerFilePath.c_str()))
     vlogf(LOG_BUG, format("unlink failed in saveChar for %s") % realName);
 
-  if (link(accountFilePath.c_str(), playerFilePath.c_str()))
-    vlogf(LOG_BUG, format("link failed in saveChar for %s") % realName);
+  if (link(accountFilePath.c_str(), playerFilePath.c_str())) {
+    // Hardlinks can be unavailable on some filesystems (e.g. Android
+    // SELinux denies them inside app data dirs).  Fall back to a byte
+    // copy so the player-side mirror stays usable by load_char etc.
+    vlogf(LOG_BUG,
+      format("link failed in saveChar for %s, copying instead") % realName);
+
+    FILE* src = fopen(accountFilePath.c_str(), "r");
+    FILE* dst = fopen(playerFilePath.c_str(), "w");
+
+    if (!src || !dst) {
+      vlogf(LOG_BUG,
+        format("copy fallback failed in saveChar for %s") % realName);
+    } else {
+      char cpbuf[4096];
+      size_t n;
+      while ((n = fread(cpbuf, 1, sizeof(cpbuf), src)) > 0)
+        fwrite(cpbuf, 1, n, dst);
+    }
+
+    if (src)
+      fclose(src);
+    if (dst)
+      fclose(dst);
+  }
 
   // Call these on tmp if exists to allow full saving of shapeshifted chars
   if (auto* person = dynamic_cast<TPerson*>(tmp ? tmp : this))
