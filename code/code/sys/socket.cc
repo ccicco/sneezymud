@@ -1887,7 +1887,7 @@ void TMainSocket::closeAllSockets() {
 }
 
 void TSocket::nonBlock() {
-  if (fcntl(m_sock, F_SETFL, FNDELAY) == -1) {
+  if (fcntl(m_sock, F_SETFL, O_NONBLOCK) == -1) {
     perror("Noblock");
     exit(1);
   }

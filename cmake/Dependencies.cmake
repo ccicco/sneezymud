@@ -11,7 +11,7 @@ include(FetchContent)
 # Static linking eliminates the Boost shared library dependency at runtime,
 # which simplifies the Docker image and prevents CI cache-hit failures where the
 # cached binary can't find Boost shared libraries that were never installed.
-set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost 1.83 REQUIRED COMPONENTS
     program_options
     regex

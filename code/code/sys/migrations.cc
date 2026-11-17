@@ -5,6 +5,7 @@
 #include "charfile.h"
 #include "player_data.h"
 
+#include <crypt.h>
 #include <cassert>
 #include <boost/format.hpp>
 #include <map>
